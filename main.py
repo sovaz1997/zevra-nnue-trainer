@@ -8,7 +8,6 @@ from src.networks.simple.data_manager import SimpleNetworkDataManager
 from src.networks.simple.network import SimpleNetwork, SimpleDeepNetwork
 from src.train import train
 
-POSITIONS_COUNT = 10000000
 
 def get_positions_distribution(count: int):
     return round(count * 0.8), round(count * 0.2)
@@ -43,9 +42,6 @@ def create_data_loader(manager: TrainDataManager, path: str, positions_count: in
     dataset = ChessDataset(path, manager, positions_count)
     return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
-def create_train_data_loader(manager: TrainDataManager, path: str):
-    return create_data_loader(manager, path, TRAIN_POSITIONS_COUNT)
-
 def run_simple_train_nnue(
         hidden_size: int,
         train_dataset_path: str,
@@ -55,12 +51,14 @@ def run_simple_train_nnue(
     # evaluate_position_simple("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
     # return None
 
+    train_count, validation_count = get_positions_distribution(10000000)
+
     manager = SimpleNetworkDataManager()
 
     train(
         SimpleNetwork(hidden_size),
-        create_data_loader(manager, train_dataset_path),
-        create_data_loader(manager, validation_dataset_path),
+        create_data_loader(manager, train_dataset_path, train_count),
+        create_data_loader(manager, validation_dataset_path, validation_count),
         train_directory
     )
 
@@ -100,16 +98,23 @@ def run_simple_deep_train_nnue(
 
 SHOULD_TRAIN_SIMPLE = False
 SHOULD_TRAIN_HALFKP = False
-SHOULD_TRAIN_SIMPLE_DEEP = True
+SHOULD_TRAIN_SIMPLE_DEEP = False
 TRAINS_DIR = "trains"
 
 if __name__ == '__main__':
+    run_simple_train_nnue(
+        64,
+        "train_100millions_dataset.csv",
+        "validate_100millions_dataset.csv",
+        f"{TRAINS_DIR}/simple768x64_positions10M"
+    )
+
     if SHOULD_TRAIN_SIMPLE:
         run_simple_train_nnue(
-            128,
-            "train.csv",
-            "validate.csv",
-            f"{TRAINS_DIR}/simple"
+            32,
+            "train_100millions_dataset.csv",
+            "validate_100millions_dataset.csv",
+            f"{TRAINS_DIR}/simple_30M"
         )
 
     if SHOULD_TRAIN_HALFKP:

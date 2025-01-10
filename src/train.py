@@ -72,6 +72,9 @@ def train(
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=2, factor=0.5)
     epoch = load_checkpoint(model, optimizer, scheduler, train_directory) + 1
 
+    # print(f'Validate: {validate(model, validation_data_loader)}')
+    # return None
+
 
     TRAIN_FILE = f'{train_directory}/train.csv'
     with open(TRAIN_FILE, 'a') as train:

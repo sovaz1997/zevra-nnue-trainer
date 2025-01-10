@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 
+plt.style.use('dark_background')
+
 def update_graph(csv_file, refresh_interval=5):
     plt.ion()
     fig, ax = plt.subplots(figsize=(10, 6))
@@ -21,4 +23,4 @@ def update_graph(csv_file, refresh_interval=5):
 
         plt.pause(refresh_interval)
 
-update_graph("trains/simple_deep/train.csv")
+update_graph("trains/simple_30M/train.csv")
