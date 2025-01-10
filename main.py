@@ -109,7 +109,7 @@ if __name__ == '__main__':
             128,
             "train.csv",
             "validate.csv",
-            f"{SHOULD_TRAIN_SIMPLE_DEEP}/simple"
+            f"{TRAINS_DIR}/simple"
         )
 
     if SHOULD_TRAIN_HALFKP:
@@ -117,7 +117,7 @@ if __name__ == '__main__':
             128,
             "train_100millions_dataset.csv",
             "validate_100millions_dataset.csv",
-            f"{SHOULD_TRAIN_SIMPLE_DEEP}/halfkp"
+            f"{TRAINS_DIR}/halfkp"
         )
 
     if SHOULD_TRAIN_SIMPLE_DEEP:
@@ -125,5 +125,5 @@ if __name__ == '__main__':
             32,
             "train_100millions_dataset.csv",
             "validate_100millions_dataset.csv",
-            f"{SHOULD_TRAIN_SIMPLE_DEEP}/simple_deep"
+            f"{TRAINS_DIR}/simple_deep"
         )
