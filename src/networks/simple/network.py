@@ -1,3 +1,4 @@
+import torch
 from torch import clamp, nn
 
 from src.networks.simple.constants import SIMPLE_NETWORK_INPUT_SIZE
@@ -35,8 +36,18 @@ class SimpleDeepNetwork(NNUE):
         self._save_weight(self.fc3, "fc3", epoch, train_directory)
 
     def forward(self, x):
-        x = clamp(self.fc1(x), 0, 1)
-        x = clamp(self.fc2(x), 0, 1)
-        x = self.fc3(x)
+        QA = 255
+        QB = 64
+
+        # квантовизация умножением на 255
+
+        # print weights
+
+        #x = torch.round(self.fc1.weight * 255)
+        x = torch.round(self.fc1(x)) * QA
+        print(x)
+
+        x = clamp(self.fc2(x) * QB, 0, QB)
+        x = self.fc3(x) * QB
 
         return x

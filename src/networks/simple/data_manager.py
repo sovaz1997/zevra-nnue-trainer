@@ -32,13 +32,17 @@ class SimpleNetworkDataManager(TrainDataManager):
         nnue_input = np.zeros(SIMPLE_NETWORK_INPUT_SIZE, dtype=np.int8)
         occupied = board.occupied
 
+        cnt = 0
         while occupied:
+            cnt += 1
             square = ctzll(occupied)
             piece = board.piece_at(square)
             color = piece.color
             piece_type = piece.piece_type
             nnue_input[calculate_nnue_index(color, piece_type, square)] = 1
             occupied &= occupied - 1
+
+        print(cnt)
 
         return nnue_input
 

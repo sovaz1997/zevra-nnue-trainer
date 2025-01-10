@@ -13,6 +13,15 @@ POSITIONS_COUNT = 10000000
 def get_positions_distribution(count: int):
     return round(count * 0.8), round(count * 0.2)
 
+def evaluate_position_simple_deep(fen):
+    nnue = SimpleDeepNetwork(32)
+    manager = SimpleNetworkDataManager()
+    nnue.load_weights(129, "trains/simple_deep")
+    nnue.eval()
+    nnue_input = manager.calculate_nnue_input_layer(fen)
+    nnue_input = tensor(nnue_input, dtype=float32)
+    print(nnue(nnue_input).item())
+
 def evaluate_position_simple(fen):
     nnue = SimpleNetwork(128)
     manager = SimpleNetworkDataManager()
@@ -43,8 +52,6 @@ def create_data_loader(manager: TrainDataManager, path: str, positions_count: in
     dataset = ChessDataset(path, manager, positions_count)
     return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
-def create_train_data_loader(manager: TrainDataManager, path: str):
-    return create_data_loader(manager, path, TRAIN_POSITIONS_COUNT)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -52,8 +59,9 @@ def run_simple_train_nnue(
         validation_dataset_path: str,
         train_directory
 ):
-    # evaluate_position_simple("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
-    # return None
+    #evaluate_position_simple("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+    evaluate_position_simple("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    return None
 
     manager = SimpleNetworkDataManager()
 
@@ -86,6 +94,9 @@ def run_simple_deep_train_nnue(
         validation_dataset_path: str,
         train_directory
 ):
+    evaluate_position_simple_deep("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+    return None
+
     train_count, validation_count = get_positions_distribution(10000000)
 
     manager = SimpleNetworkDataManager()

@@ -61,6 +61,7 @@ def train(
         validation_data_loader: DataLoader,
         train_directory: str
 ):
+
     if not os.path.exists(train_directory):
         os.makedirs(train_directory)
 
