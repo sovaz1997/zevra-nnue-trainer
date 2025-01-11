@@ -88,7 +88,7 @@ def train(
 
         for batch_idx, (batch_inputs, batch_scores) in enumerate(train_data_loader):
             index += 1
-            if index % 100 == 0:
+            if index % 1000 == 0:
                 print(f"Learning: {index}", flush=True)
             count += len(batch_inputs[0])
 
@@ -96,9 +96,6 @@ def train(
                 batch_inputs[i] = batch_inputs[i].to(device, non_blocking=True)
 
             batch_scores = batch_scores.to(device, non_blocking=True)
-
-            # batch_inputs = batch_inputs.to(device, non_blocking=True)
-            # batch_scores = batch_scores.to(device, non_blocking=True)
 
             optimizer.zero_grad()
             outputs = model(*batch_inputs)
@@ -110,9 +107,9 @@ def train(
         loss = (running_loss / index)
         scheduler.step(loss)
 
-        save_checkpoint(model, optimizer, scheduler, epoch, train_directory)
         validate_loss = validate(model, validation_data_loader)
         print(f"Epoch [{epoch}], Train loss: {loss:.4f}, Validate loss: {validate_loss:.4f}", flush=True)
+        save_checkpoint(model, optimizer, scheduler, epoch, train_directory)
 
         with open(TRAIN_FILE, 'a') as train:
             train.write(f"{epoch},{loss:.4f},{validate_loss:.4f}\n")
