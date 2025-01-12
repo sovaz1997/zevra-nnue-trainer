@@ -4,6 +4,11 @@ from torch import nn
 from torch.utils.data import DataLoader
 
 from src.model.nnue import NNUE
+from src.networks.simple.data_manager import SCALE
+
+
+def compute_loss(loss: float):
+    return loss * SCALE * SCALE
 
 def validate(model: nn.Module, validation_dataloader: DataLoader):
     batches_length = 0
@@ -19,7 +24,7 @@ def validate(model: nn.Module, validation_dataloader: DataLoader):
         loss = criterion(outputs.squeeze(), batch_scores)
         running_loss += loss.item()
 
-    return running_loss / batches_length
+    return compute_loss(running_loss / batches_length)
 
 def save_checkpoint(
         model,
@@ -108,14 +113,15 @@ def train(
         scheduler.step(loss)
 
         validate_loss = validate(model, validation_data_loader)
-        print(f"Epoch [{epoch}], Train loss: {loss:.4f}, Validate loss: {validate_loss:.4f}", flush=True)
+        print_loss = compute_loss(loss)
+        print(f"Epoch [{epoch}], Train loss: {print_loss:.4f}, Validate loss: {validate_loss:.4f}", flush=True)
         save_checkpoint(model, optimizer, scheduler, epoch, train_directory)
 
         with open(TRAIN_FILE, 'a') as train:
-            train.write(f"{epoch},{loss:.4f},{validate_loss:.4f}\n")
+            train.write(f"{epoch},{print_loss:.4f},{validate_loss:.4f}\n")
 
         epoch += 1
 
-        if loss < 0.05:
-            break
+        # if loss < 0.05:
+        #     break
         print(optimizer.param_groups[0]['lr'])

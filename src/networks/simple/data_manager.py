@@ -8,6 +8,7 @@ from src.networks.simple.constants import SIMPLE_NETWORK_INPUT_SIZE
 from src.model.train_data_manager import TrainDataManager
 from src.utils import ctzll, unpack_bits, pack_bits
 
+SCALE = 400
 
 def calculate_nnue_index(color: bool, piece: int, square: int):
     colors_mapper = {
@@ -51,7 +52,7 @@ class SimpleNetworkDataManager(TrainDataManager):
     def parse_record(self, record: bytes):
         packed_size = self.get_packed_size()
         packed_input = record[:self.get_packed_size()]
-        eval_score = struct.unpack('f', record[packed_size:])[0]
+        eval_score = struct.unpack('f', record[packed_size:])[0] / SCALE
         nnue_input = unpack_bits(packed_input, SIMPLE_NETWORK_INPUT_SIZE)
 
         return (

@@ -15,7 +15,16 @@ def get_positions_distribution(count: int):
 def evaluate_position_simple(fen):
     nnue = SimpleNetwork(128)
     manager = SimpleNetworkDataManager()
-    nnue.load_weights(16, "simple")
+    nnue.load_weights(22, "trains/simple_screlu_768x128_positions13M_self-play-dataset_with-biases")
+    nnue.eval()
+    nnue_input = manager.calculate_nnue_input_layer(fen)
+    nnue_input = tensor(nnue_input, dtype=float32)
+    print(nnue(nnue_input).item())
+
+def evaluate_position_simple_deep(fen):
+    nnue = SimpleDeepNetwork(128, 16)
+    manager = SimpleNetworkDataManager()
+    nnue.load_weights(55, "trains/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases")
     nnue.eval()
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
@@ -46,12 +55,15 @@ def run_simple_train_nnue(
         hidden_size: int,
         train_dataset_path: str,
         validation_dataset_path: str,
-        train_directory
+        train_directory,
+        positions_count: int
 ):
     # evaluate_position_simple("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+    # evaluate_position_simple("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    # evaluate_position_simple("1nbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQk - 0 1")
     # return None
 
-    train_count, validation_count = get_positions_distribution(10000000)
+    train_count, validation_count = get_positions_distribution(positions_count)
 
     manager = SimpleNetworkDataManager()
 
@@ -80,16 +92,22 @@ def run_halfkp_train_nnue(
 
 def run_simple_deep_train_nnue(
         hidden_size: int,
+        second_hidden_size: int,
         train_dataset_path: str,
         validation_dataset_path: str,
-        train_directory
+        train_directory,
+        positions_count: int
 ):
-    train_count, validation_count = get_positions_distribution(10000000)
+    evaluate_position_simple_deep("2k5/8/8/8/8/8/8/2KBN3 w - - 0 1")
+    # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    return None
+
+    train_count, validation_count = get_positions_distribution(positions_count)
 
     manager = SimpleNetworkDataManager()
 
     train(
-        SimpleDeepNetwork(hidden_size),
+        SimpleDeepNetwork(hidden_size, second_hidden_size),
         create_data_loader(manager, train_dataset_path, train_count),
         create_data_loader(manager, validation_dataset_path, validation_count),
         train_directory
@@ -102,12 +120,70 @@ SHOULD_TRAIN_SIMPLE_DEEP = False
 TRAINS_DIR = "trains"
 
 if __name__ == '__main__':
-    run_simple_train_nnue(
-        64,
-        "train_100millions_dataset.csv",
-        "validate_100millions_dataset.csv",
-        f"{TRAINS_DIR}/simple768x64_positions10M"
+    # run_simple_train_nnue(
+    #     1024,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x1024_positions13M_self-play-dataset",
+    #     13000000
+    # )
+
+    # run_simple_train_nnue(
+    #     256,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x256_positions13M_self-play-dataset",
+    #     13000000
+    # )
+
+    run_simple_deep_train_nnue(
+        128,
+        16,
+        "train_self-play-training-dataset.csv",
+        "validate_self-play-training-dataset.csv",
+        f"{TRAINS_DIR}/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases",
+        13000000
     )
+
+    # run_simple_train_nnue(
+    #     128,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/simple_screlu_768x128_positions13M_self-play-dataset_with-biases",
+    #     13000000
+    # )
+    #
+    # run_simple_train_nnue(
+    #     128,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x128_positions20M",
+    #     20000000
+    # )
+
+    # run_simple_train_nnue(
+    #     64,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x64_positions30M",
+    #     30000000
+    # )
+
+    # run_simple_train_nnue(
+    #     64,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x64_positions10M",
+    #     10000000
+    # )
+
+    # run_simple_train_nnue(
+    #     64,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/simple768x64_positions3M",
+    #     3000000
+    # )
 
     if SHOULD_TRAIN_SIMPLE:
         run_simple_train_nnue(
