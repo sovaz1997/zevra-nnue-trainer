@@ -4,7 +4,7 @@ from src.model.chess_dataset import ChessDataset
 from src.model.train_data_manager import TrainDataManager
 from src.networks.halfkp.data_manager import HalfKPDataManager
 from src.networks.halfkp.network import HalfKPNetwork
-from src.networks.simple.data_manager import SimpleNetworkDataManager
+from src.networks.simple.data_manager import SimpleNetworkDataManager, SCALE
 from src.networks.simple.network import SimpleNetwork, SimpleDeepNetwork
 from src.train import train
 
@@ -24,11 +24,11 @@ def evaluate_position_simple(fen):
 def evaluate_position_simple_deep(fen):
     nnue = SimpleDeepNetwork(128, 16)
     manager = SimpleNetworkDataManager()
-    nnue.load_weights(1, "trains/768x128x16_50Mv2")
+    nnue.load_weights(2, "trains/768x128x16_130MSelfPlay_full-relu")
     nnue.eval()
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
-    print(nnue(nnue_input).item())
+    print(nnue(nnue_input).item() * SCALE)
 
 def evaluate_position_halfkp(fen):
     nnue = HalfKPNetwork(128)
@@ -98,6 +98,7 @@ def run_simple_deep_train_nnue(
         train_directory,
         positions_count: int
 ):
+    # evaluate_position_simple_deep("r1b2rk1/pppp1ppp/2n5/2b3Bq/3p4/2PB1N2/PP3PPP/RN1Q1RK1 w - - 9 11")
     # evaluate_position_simple_deep("2k5/8/8/8/8/8/8/2KBN3 w - - 0 1")
     # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
     # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
@@ -107,6 +108,7 @@ def run_simple_deep_train_nnue(
     # evaluate_position_simple_deep("4k3/8/8/8/8/8/QQQQQQQQ/QQQQKQQQ w HAha - 0 1")
     # evaluate_position_simple_deep("2kr1br1/p1p2p2/4p2p/3p1np1/8/1PB2P2/P4P1P/2R3RK b - - 3 22")
     # evaluate_position_simple_deep("2kr1br1/p1p2p2/4p2p/3p1np1/8/1PB2P2/P4P1P/2R3RK w - - 3 22")
+    # evaluate_position_simple_deep("r2qkb1r/ppp2pp1/2n1p3/4P1Pp/2BP2bK/3Q4/PBP2P2/2R2R2 b kq - 2 17")
     # return None
 
     train_count, validation_count = get_positions_distribution(positions_count)
@@ -143,14 +145,41 @@ if __name__ == '__main__':
     #     13000000
     # )
 
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/768x128x16_50Mv2",
+    #     50000000
+    # )
+
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/768x128x16_50M",
+    #     50000000
+    # )
+
     run_simple_deep_train_nnue(
         128,
         16,
-        "train_100millions_dataset.csv",
-        "validate_100millions_dataset.csv",
-        f"{TRAINS_DIR}/768x128x16_50Mv2",
-        50000000
+            "train_self-play-training-dataset.csv",
+        "validate_self-play-training-dataset.csv",
+        f"{TRAINS_DIR}/768x128x16_130MSelfPlay_full-relu",
+        13000000
     )
+
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/768x128x16_13MSelf",
+    #     13000000
+    # )
 
     # run_simple_deep_train_nnue(
     #     128,

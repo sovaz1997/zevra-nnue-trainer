@@ -6,17 +6,17 @@ from torch import nn
 
 def save_layer_weights(weights: nn.Linear, weights_filename, biases_filename):
     weight_matrix = weights.weight.cpu().data.numpy()  # shape [out_features, in_features]
-    biases_vector = weights.bias.cpu().data.numpy()  # shape [out_features]
+    # biases_vector = weights.bias.cpu().data.numpy()  # shape [out_features]
     flat_weights = weight_matrix.flatten()  # shape [out_features * in_features]
-    flat_biases = biases_vector.flatten()  # shape [out_features]
+    # flat_biases = biases_vector.flatten()  # shape [out_features]
 
     with open(weights_filename, 'w') as file:
         file.write(','.join(str(x) for x in flat_weights))
         file.write('\n')
 
-    with open(biases_filename.replace('weights', 'biases'), 'w') as file:
-        file.write(','.join(str(x) for x in flat_biases))
-        file.write('\n')
+    # with open(biases_filename.replace('weights', 'biases'), 'w') as file:
+    #     file.write(','.join(str(x) for x in flat_biases))
+    #     file.write('\n')
 
 
 class NNUE(nn.Module):
