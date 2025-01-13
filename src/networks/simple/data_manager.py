@@ -8,7 +8,7 @@ from src.networks.simple.constants import SIMPLE_NETWORK_INPUT_SIZE
 from src.model.train_data_manager import TrainDataManager
 from src.utils import ctzll, unpack_bits, pack_bits
 
-SCALE = 400
+SCALE = 1
 
 def calculate_nnue_index(color: bool, piece: int, square: int):
     colors_mapper = {

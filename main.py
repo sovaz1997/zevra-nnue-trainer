@@ -24,7 +24,7 @@ def evaluate_position_simple(fen):
 def evaluate_position_simple_deep(fen):
     nnue = SimpleDeepNetwork(128, 16)
     manager = SimpleNetworkDataManager()
-    nnue.load_weights(55, "trains/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases")
+    nnue.load_weights(1, "trains/768x128x16_50Mv2")
     nnue.eval()
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
@@ -98,9 +98,16 @@ def run_simple_deep_train_nnue(
         train_directory,
         positions_count: int
 ):
-    evaluate_position_simple_deep("2k5/8/8/8/8/8/8/2KBN3 w - - 0 1")
+    # evaluate_position_simple_deep("2k5/8/8/8/8/8/8/2KBN3 w - - 0 1")
     # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
-    return None
+    # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq - 0 1")
+    # evaluate_position_simple_deep("1nb1kbn1/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQha - 0 1")
+    # evaluate_position_simple_deep("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+    # evaluate_position_simple_deep("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+    # evaluate_position_simple_deep("4k3/8/8/8/8/8/QQQQQQQQ/QQQQKQQQ w HAha - 0 1")
+    # evaluate_position_simple_deep("2kr1br1/p1p2p2/4p2p/3p1np1/8/1PB2P2/P4P1P/2R3RK b - - 3 22")
+    # evaluate_position_simple_deep("2kr1br1/p1p2p2/4p2p/3p1np1/8/1PB2P2/P4P1P/2R3RK w - - 3 22")
+    # return None
 
     train_count, validation_count = get_positions_distribution(positions_count)
 
@@ -139,11 +146,20 @@ if __name__ == '__main__':
     run_simple_deep_train_nnue(
         128,
         16,
-        "train_self-play-training-dataset.csv",
-        "validate_self-play-training-dataset.csv",
-        f"{TRAINS_DIR}/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases",
-        13000000
+        "train_100millions_dataset.csv",
+        "validate_100millions_dataset.csv",
+        f"{TRAINS_DIR}/768x128x16_50Mv2",
+        50000000
     )
+
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases",
+    #     13000000
+    # )
 
     # run_simple_train_nnue(
     #     128,

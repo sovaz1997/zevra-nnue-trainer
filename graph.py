@@ -23,4 +23,4 @@ def update_graph(csv_file, refresh_interval=5):
 
         plt.pause(refresh_interval)
 
-update_graph("trains/simple_deep_screlu_768x128_positions13M_self-play-dataset_with-biases/train.csv")
+update_graph("trains/768x128x16_50Mv2/train.csv")
