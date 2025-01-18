@@ -130,11 +130,11 @@ TRAINS_DIR = "trains"
 
 if __name__ == '__main__':
     run_simple_train_nnue(
-        64,
-        "train_good-train-data.csv",
-        "validate_good-train-data.csv",
-        f"{TRAINS_DIR}/768x64-quality-40M",
-        37716000
+        32,
+        "train_stockfish-dataset.csv",
+        "validate_stockfish-dataset.csv",
+        f"{TRAINS_DIR}/768x32-stockfish-360K",
+        319977
     )
 
     # run_simple_train_nnue(

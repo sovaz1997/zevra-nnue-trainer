@@ -7,11 +7,11 @@ fi
 
 base_output_csv="$1"
 
-input_csv="./good-train-data.csv"
+input_csv="./billion-dataset.fen"
 
 startPoint=0
-lastPoint=5000000
-threads=6
+lastPoint=10000000
+threads=12
 batchSize=$(( (lastPoint - startPoint) / threads ))
 
 for ((i=1; i<=threads; i++)); do

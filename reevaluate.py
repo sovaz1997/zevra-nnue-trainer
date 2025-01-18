@@ -6,6 +6,7 @@ import chess.engine
 def evaluate_positions(input_file, output_file, engine_path, nodes_limit):
     engine = chess.engine.SimpleEngine.popen_uci(engine_path)
 
+    row_count = 0
     with open(input_file, newline='', encoding='utf-8') as f_in, \
             open(output_file, 'w', newline='', encoding='utf-8') as f_out:
 
@@ -15,6 +16,7 @@ def evaluate_positions(input_file, output_file, engine_path, nodes_limit):
         writer.writeheader()
 
         for row in reader:
+            row_count += 1
             if not row:
                 continue
             fen = row[0]
@@ -28,6 +30,9 @@ def evaluate_positions(input_file, output_file, engine_path, nodes_limit):
             score = info["score"].white().score(mate_score=100000)
 
             writer.writerow({'fen': fen, 'eval': score})
+
+            if row_count % 100 == 0:
+                f_out.flush()
 
     engine.quit()
 
