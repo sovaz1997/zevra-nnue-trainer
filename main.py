@@ -13,13 +13,13 @@ def get_positions_distribution(count: int):
     return round(count * 0.8), round(count * 0.2)
 
 def evaluate_position_simple(fen):
-    nnue = SimpleNetwork(128)
+    nnue = SimpleNetwork(32)
     manager = SimpleNetworkDataManager()
-    nnue.load_weights(22, "trains/simple_screlu_768x128_positions13M_self-play-dataset_with-biases")
+    nnue.load_weights(20, "trains/768x32-15M")
     nnue.eval()
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
-    print(nnue(nnue_input).item())
+    print(nnue(nnue_input).item() * SCALE)
 
 def evaluate_position_simple_deep(fen):
     nnue = SimpleDeepNetwork(128, 16)
@@ -49,7 +49,7 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=512, num_workers=2, persistent_workers=True, prefetch_factor=2)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -129,12 +129,36 @@ SHOULD_TRAIN_SIMPLE_DEEP = False
 TRAINS_DIR = "trains"
 
 if __name__ == '__main__':
+    run_simple_train_nnue(
+        64,
+        "train_good-train-data.csv",
+        "validate_good-train-data.csv",
+        f"{TRAINS_DIR}/768x64-quality-40M",
+        37716000
+    )
+
     # run_simple_train_nnue(
-    #     1024,
+    #     32,
+    #     "train_good-train-data.csv",
+    #     "validate_good-train-data.csv",
+    #     f"{TRAINS_DIR}/768x32-40M",
+    #     37716293
+    # )
+
+    # run_simple_train_nnue(
+    #     32,
     #     "train_self-play-training-dataset.csv",
     #     "validate_self-play-training-dataset.csv",
-    #     f"{TRAINS_DIR}/simple768x1024_positions13M_self-play-dataset",
+    #     f"{TRAINS_DIR}/simple-768x32-13M",
     #     13000000
+    # )
+
+    # run_simple_train_nnue(
+    #     32,
+    #     "train_2M.csv",
+    #     "validate_2M.csv",
+    #     f"{TRAINS_DIR}/simple-768x32-2M",
+    #     700000
     # )
 
     # run_simple_train_nnue(
@@ -163,14 +187,50 @@ if __name__ == '__main__':
     #     50000000
     # )
 
-    run_simple_deep_train_nnue(
-        128,
-        16,
-            "train_self-play-training-dataset.csv",
-        "validate_self-play-training-dataset.csv",
-        f"{TRAINS_DIR}/768x128x16_130MSelfPlay_full-relu",
-        13000000
-    )
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #         "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/768x128x16_50MSelfPlay_full-relu",
+    #     50000000
+    # )
+
+    # run_simple_deep_train_nnue(
+    #     256,
+    #     64,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/768x256x64_13MSelfPlay",
+    #     13000000
+    # )
+
+    # run_simple_deep_train_nnue(
+    #     128,
+    #     16,
+    #         "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/768x128x16_130MSelfPlay_full-relu",
+    #     13000000
+    # )
+
+    # TODO: Test this
+    # run_simple_train_nnue(
+    #     256,
+    #         "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/768x256_13MSelfPlay",
+    #     13000000
+    # )
+
+    # run_simple_deep_train_nnue(
+    #     8,
+    #     8,
+    #     "train_self-play-training-dataset.csv",
+    #     "validate_self-play-training-dataset.csv",
+    #     f"{TRAINS_DIR}/768x8x8_13MSelf",
+    #     13000000
+    # )
 
     # run_simple_deep_train_nnue(
     #     128,
