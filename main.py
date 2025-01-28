@@ -49,7 +49,7 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=512, num_workers=2, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -129,20 +129,52 @@ SHOULD_TRAIN_SIMPLE_DEEP = False
 TRAINS_DIR = "trains"
 
 if __name__ == '__main__':
+    # run_simple_train_nnue(
+    #     128,
+    #     "train_stockfish.dataset.csv",
+    #     "validate_stockfish.dataset.csv",
+    #     f"{TRAINS_DIR}/768x128-stockfish-3M",
+    #     3768815
+    # )
+
+    # run_simple_train_nnue(
+    #     64,
+    #     "train_combined2.csv",
+    #     "validate_combined2.csv",
+    #     f"{TRAINS_DIR}/768x64-30M-sigmoid-loss",
+    #     30000000
+    # )
+
     run_simple_train_nnue(
-        32,
-        "train_stockfish-dataset.csv",
-        "validate_stockfish-dataset.csv",
-        f"{TRAINS_DIR}/768x32-stockfish-360K",
-        319977
+        64,
+        "train_combined2.csv",
+        "validate_combined2.csv",
+        f"{TRAINS_DIR}/768x64-100M-sigmoid-loss",
+        100000000
     )
 
     # run_simple_train_nnue(
-    #     32,
+    #     256,
+    #     "train_combined2.csv",
+    #     "validate_combined2.csv",
+    #     f"{TRAINS_DIR}/768x256-210M",
+    #     209421448
+    # )
+
+    # run_simple_train_nnue(
+    #     256,
     #     "train_good-train-data.csv",
     #     "validate_good-train-data.csv",
-    #     f"{TRAINS_DIR}/768x32-40M",
+    #     f"{TRAINS_DIR}/768x256-40M",
     #     37716293
+    # )
+
+    # run_simple_train_nnue(
+    #     8,
+    #     "train_100millions_dataset.csv",
+    #     "validate_100millions_dataset.csv",
+    #     f"{TRAINS_DIR}/768x8-50M-ccrl",
+    #     50000000
     # )
 
     # run_simple_train_nnue(

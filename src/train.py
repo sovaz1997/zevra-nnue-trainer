@@ -7,6 +7,11 @@ from src.model.nnue import NNUE
 from src.networks.simple.data_manager import SCALE
 
 
+def sigmoid(cp_space_eval: torch.Tensor, scale_factor = 400.0):
+    return torch.sigmoid(cp_space_eval / scale_factor)
+
+
+
 def compute_loss(loss: float):
     return loss * SCALE * SCALE
 
@@ -20,8 +25,8 @@ def validate(model: nn.Module, validation_dataloader: DataLoader):
         for i, batch_input in enumerate(batch_inputs):
             batch_inputs[i] = batch_inputs[i].to("mps")
         batch_scores = batch_scores.to("mps")
-        outputs = model(*batch_inputs)
-        loss = criterion(outputs.squeeze(), batch_scores)
+        outputs = sigmoid(model(*batch_inputs))
+        loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
         running_loss += loss.item()
 
     return compute_loss(running_loss / batches_length)
@@ -103,8 +108,8 @@ def train(
             batch_scores = batch_scores.to(device, non_blocking=True)
 
             optimizer.zero_grad()
-            outputs = model(*batch_inputs)
-            loss = criterion(outputs.squeeze(), batch_scores)
+            outputs = sigmoid(model(*batch_inputs))
+            loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
             loss.backward()
             optimizer.step()
 
@@ -114,11 +119,11 @@ def train(
 
         validate_loss = validate(model, validation_data_loader)
         print_loss = compute_loss(loss)
-        print(f"Epoch [{epoch}], Train loss: {print_loss:.4f}, Validate loss: {validate_loss:.4f}", flush=True)
+        print(f"Epoch [{epoch}], Train loss: {print_loss:.12f}, Validate loss: {validate_loss:.4f}", flush=True)
         save_checkpoint(model, optimizer, scheduler, epoch, train_directory)
 
         with open(TRAIN_FILE, 'a') as train:
-            train.write(f"{epoch},{print_loss:.4f},{validate_loss:.4f}\n")
+            train.write(f"{epoch},{print_loss:.12f},{validate_loss:.12f}\n")
 
         epoch += 1
 

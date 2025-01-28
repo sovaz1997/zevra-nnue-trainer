@@ -38,7 +38,7 @@ def evaluate_positions(input_file, output_file, engine_path, nodes_limit):
 
 
 if __name__ == "__main__":
-    input_csv = './good-train-data.csv'
+    input_csv = './self-play-dataset.csv'
     output_csv = './good-train-data.stockfish.csv'
     stockfish_path = './stockfish-macos-m1-apple-silicon'
     nodes_limit = 10000
