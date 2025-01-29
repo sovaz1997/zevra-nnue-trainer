@@ -13,9 +13,9 @@ def get_positions_distribution(count: int):
     return round(count * 0.8), round(count * 0.2)
 
 def evaluate_position_simple(fen):
-    nnue = SimpleNetwork(32)
+    nnue = SimpleNetwork(8)
     manager = SimpleNetworkDataManager()
-    nnue.load_weights(20, "trains/768x32-15M")
+    nnue.load_weights(2, "trains/768x8-marked-4M")
     nnue.eval()
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
@@ -49,7 +49,7 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=16384, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -146,11 +146,11 @@ if __name__ == '__main__':
     # )
 
     run_simple_train_nnue(
-        64,
-        "train_combined2.csv",
-        "validate_combined2.csv",
-        f"{TRAINS_DIR}/768x64-100M-sigmoid-loss",
-        100000000
+        8,
+        "train_marked-dataset.csv",
+        "validate_marked-dataset.csv",
+        f"{TRAINS_DIR}/768x8-marked-4M",
+        4404855
     )
 
     # run_simple_train_nnue(

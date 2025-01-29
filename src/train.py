@@ -6,9 +6,10 @@ from torch.utils.data import DataLoader
 from src.model.nnue import NNUE
 from src.networks.simple.data_manager import SCALE
 
+lambda_ = 0.5
 
-def sigmoid(cp_space_eval: torch.Tensor, scale_factor = 400.0):
-    return torch.sigmoid(cp_space_eval / scale_factor)
+def sigmoid(cp_space_eval: torch.Tensor):
+    return torch.sigmoid(cp_space_eval / SCALE)
 
 
 
@@ -20,13 +21,18 @@ def validate(model: nn.Module, validation_dataloader: DataLoader):
     criterion = nn.MSELoss()
     running_loss = 0.0
 
-    for batch_idx, (batch_inputs, batch_scores) in enumerate(validation_dataloader):
+    for batch_idx, (batch_inputs, batch_scores, wdl) in enumerate(validation_dataloader):
         batches_length += 1
         for i, batch_input in enumerate(batch_inputs):
             batch_inputs[i] = batch_inputs[i].to("mps")
         batch_scores = batch_scores.to("mps")
-        outputs = sigmoid(model(*batch_inputs))
-        loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
+        wdl = wdl.to("mps")
+
+        wdl_eval_model = sigmoid(model(*batch_inputs))
+        wdl_eval_target = sigmoid(batch_scores)
+        wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
+        loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
+
         running_loss += loss.item()
 
     return compute_loss(running_loss / batches_length)
@@ -78,7 +84,7 @@ def train(
     model = model.to(device)
 
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=2, factor=0.5)
     epoch = load_checkpoint(model, optimizer, scheduler, train_directory) + 1
 
@@ -96,7 +102,7 @@ def train(
         count = 0
         index = 0
 
-        for batch_idx, (batch_inputs, batch_scores) in enumerate(train_data_loader):
+        for batch_idx, (batch_inputs, batch_scores, wdl) in enumerate(train_data_loader):
             index += 1
             if index % 1000 == 0:
                 print(f"Learning: {index}", flush=True)
@@ -106,10 +112,20 @@ def train(
                 batch_inputs[i] = batch_inputs[i].to(device, non_blocking=True)
 
             batch_scores = batch_scores.to(device, non_blocking=True)
+            wdl = wdl.to(device, non_blocking=True)
 
             optimizer.zero_grad()
-            outputs = sigmoid(model(*batch_inputs))
-            loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
+
+
+            wdl_eval_model = sigmoid(model(*batch_inputs))
+            wdl_eval_target = sigmoid(batch_scores)
+            wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
+
+            loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
+
+
+
+            # loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
             loss.backward()
             optimizer.step()
 

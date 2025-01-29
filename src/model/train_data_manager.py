@@ -3,7 +3,7 @@ from abc import abstractmethod
 
 class TrainDataManager:
     @abstractmethod
-    def save_bin_data(self, writer, fen: str, eval_score: float):
+    def save_bin_data(self, writer, fen: str, eval_score: float, wdl: float):
         pass
 
     @abstractmethod

@@ -24,16 +24,18 @@ class ChessDataset(IterableDataset):
 
         with (open(file_path, 'r') as f):
             reader = csv.reader(f)
+            print('reader')
 
             with open(self.bin_file_path, 'wb') as writer:
                 for idx, row in enumerate(reader):
                     if idx % 10000 == 0:
                         print(f"Processed positions: {idx}", flush=True)
-                    fen, score = row
+                    fen, wdl, score = row
                     try:
-                        self.data_manager.save_bin_data(writer, fen, float(score))
+                        self.data_manager.save_bin_data(writer, fen, float(score), float(wdl))
                         self.dataset_positions_count += 1
                     except Exception as e:
+                        print('lol')
                         print(e.with_traceback())
                         continue
         print("Dataset prepared")

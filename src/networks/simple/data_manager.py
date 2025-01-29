@@ -47,24 +47,27 @@ class SimpleNetworkDataManager(TrainDataManager):
         return SIMPLE_NETWORK_INPUT_SIZE // 8
 
     def get_record_size(self):
-        return self.get_packed_size() + 4
+        return self.get_packed_size() + 2 * 4
 
     def parse_record(self, record: bytes):
         packed_size = self.get_packed_size()
         packed_input = record[:self.get_packed_size()]
-        eval_score = struct.unpack('f', record[packed_size:])[0] / SCALE
+        eval_score = struct.unpack('f', record[packed_size:packed_size + 4])[0] / SCALE
+        wdl_score = struct.unpack('f', record[packed_size + 4:])[0]
         nnue_input = unpack_bits(packed_input, SIMPLE_NETWORK_INPUT_SIZE)
 
         return (
             [tensor(nnue_input, dtype=float32)],
             tensor(eval_score, dtype=float32),
+            tensor(wdl_score, dtype=float32)
         )
 
     def get_bin_folder(self):
         return "simple"
 
-    def save_bin_data(self, writer, fen: str, eval_score: float):
+    def save_bin_data(self, writer, fen: str, eval_score: float, wdl: float):
         nnue_input = self.calculate_nnue_input_layer(fen)
         packed_input = pack_bits(nnue_input)
         writer.write(packed_input)
         writer.write(struct.pack('f', eval_score))
+        writer.write(struct.pack('f', wdl))
