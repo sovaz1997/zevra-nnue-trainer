@@ -145,12 +145,20 @@ if __name__ == '__main__':
     #     30000000
     # )
 
+    # run_simple_train_nnue(
+    #     64,
+    #     "train_combined2.csv",
+    #     "validate_combined2.csv",
+    #     f"{TRAINS_DIR}/768x64-100M-sigmoid-loss",
+    #     100000000
+    # )
+
     run_simple_train_nnue(
-        64,
-        "train_combined2.csv",
-        "validate_combined2.csv",
-        f"{TRAINS_DIR}/768x64-100M-sigmoid-loss",
-        100000000
+        256,
+        "train_febrary-dataset.csv",
+        "validate_febrary-dataset.csv",
+        f"{TRAINS_DIR}/768x256-febrary-dataset-265M",
+        264920038
     )
 
     # run_simple_train_nnue(
