@@ -7,7 +7,7 @@ from src.model.chess_dataset import ChessDataset
 from src.model.nnue import NNUE
 from src.networks.simple.data_manager import SCALE
 
-lambda_ = 0
+lambda_ = 1
 
 def sigmoid(cp_space_eval: torch.Tensor):
     return torch.sigmoid(cp_space_eval)
@@ -22,14 +22,19 @@ def validate(model: nn.Module, validation_dataloader: DataLoader):
     criterion = nn.MSELoss()
     running_loss = 0.0
 
-    for batch_idx, (batch_inputs, batch_scores, wdl) in enumerate(validation_dataloader):
+    for batch_idx, (batch_inputs_us, batch_inputs_them, batch_scores, wdl, stm) in enumerate(validation_dataloader):
         batches_length += 1
-        for i, batch_input in enumerate(batch_inputs):
-            batch_inputs[i] = batch_inputs[i].to("mps")
+        for i, batch_input in enumerate(batch_inputs_us):
+            batch_inputs_us[i] = batch_inputs_us[i].to("mps")
+
+        for i, batch_input in enumerate(batch_inputs_them):
+            batch_inputs_them[i] = batch_inputs_them[i].to("mps")
+
         batch_scores = batch_scores.to("mps")
         wdl = wdl.to("mps")
+        stm = stm.to("mps")
 
-        wdl_eval_model = sigmoid(model(*batch_inputs))
+        wdl_eval_model = sigmoid(model(*batch_inputs_us, *batch_inputs_them, stm))
         wdl_eval_target = sigmoid(batch_scores)
         wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
         loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
@@ -107,6 +112,10 @@ def calculate_wdl_eval_loss(
     print(running_loss / batches_length)
 
 
+
+
+
+
 def train(
         model: NNUE,
         train_data_loader: DataLoader,
@@ -138,24 +147,29 @@ def train(
         count = 0
         index = 0
 
-        for batch_idx, (batch_inputs, batch_scores, wdl) in enumerate(train_data_loader):
+        for batch_idx, (batch_inputs_us, batch_inputs_them, batch_scores, wdl, stm) in enumerate(train_data_loader):
             index += 1
             if index % 1000 == 0:
                 print(f"Learning: {index}", flush=True)
-            count += len(batch_inputs[0])
+            count += len(batch_inputs_us[0])
 
-            for i, batch_input in enumerate(batch_inputs):
-                batch_inputs[i] = batch_inputs[i].to(device, non_blocking=True)
+            for i, batch_input in enumerate(batch_inputs_us):
+                batch_inputs_us[i] = batch_inputs_us[i].to(device, non_blocking=True)
+
+            for i, batch_input in enumerate(batch_inputs_them):
+                batch_inputs_them[i] = batch_inputs_them[i].to(device, non_blocking=True)
 
             batch_scores = batch_scores.to(device, non_blocking=True)
             wdl = wdl.to(device, non_blocking=True)
+            stm = stm.to(device, non_blocking=True)
 
             optimizer.zero_grad()
 
 
-            wdl_eval_model = sigmoid(model(*batch_inputs))
+            wdl_eval_model = sigmoid(model(*batch_inputs_us, *batch_inputs_them, stm))
             wdl_eval_target = sigmoid(batch_scores / SCALE)
             wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
+
 
             loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
 

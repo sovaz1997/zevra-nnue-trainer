@@ -1,9 +1,12 @@
+import chess
 from torch import tensor, float32
 from torch.utils.data import DataLoader
 from src.model.chess_dataset import ChessDataset
 from src.model.train_data_manager import TrainDataManager
 from src.networks.halfkp.data_manager import HalfKPDataManager
 from src.networks.halfkp.network import HalfKPNetwork
+from src.networks.opposite.data_manager import OppositeNetworkDataManager
+from src.networks.opposite.network import OppositeNetwork
 from src.networks.simple.data_manager import SimpleNetworkDataManager, SCALE
 from src.networks.simple.network import SimpleNetwork, SimpleDeepNetwork
 from src.train import train, calculate_wdl_eval_loss, calculate_wdl_eval_loss_dataset
@@ -20,6 +23,20 @@ def evaluate_position_simple(fen):
     nnue_input = manager.calculate_nnue_input_layer(fen)
     nnue_input = tensor(nnue_input, dtype=float32)
     print(nnue(nnue_input).item() * SCALE)
+
+
+def evaluate_position_opposite(fen):
+    nnue = OppositeNetwork(8)
+    manager = OppositeNetworkDataManager()
+    nnue.load_weights(5, "trains/768x8-opposite-try")
+    nnue.eval()
+    nnue_input_us, nnue_input_them, turn = manager.calculate_nnue_input_layer(fen)
+    nnue_input_us = tensor(nnue_input_us, dtype=float32)
+    nnue_input_them = tensor(nnue_input_them, dtype=float32)
+    turn = tensor([turn], dtype=float32)
+    nnue_input_us = nnue_input_us.unsqueeze(0)
+    nnue_input_them = nnue_input_them.unsqueeze(0)
+    print(nnue(nnue_input_us, nnue_input_them, turn).item() * SCALE)
 
 def evaluate_position_simple_deep(fen):
     nnue = SimpleDeepNetwork(128, 16)
@@ -44,12 +61,36 @@ def evaluate_position_halfkp(fen):
 
 def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
     dataset = ChessDataset(path, manager)
-    return DataLoader(dataset, batch_size=512, num_workers=0)
+    return DataLoader(dataset, batch_size=16384, num_workers=0)
 
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
     return DataLoader(dataset, batch_size=16384, num_workers=10, persistent_workers=True, prefetch_factor=2)
+
+
+def run_opposite_train_nnue(
+    hidden_size: int,
+    train_dataset_path: str,
+    validation_dataset_path: str,
+    train_directory,
+    positions_count: int
+):
+    # evaluate_position_opposite("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
+    # evaluate_position_opposite("1nbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/rNBQKBN1 w - - 0 1")
+    # evaluate_position_opposite("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR b KQkq - 0 1")
+    # return None
+
+    train_count, validation_count = get_positions_distribution(positions_count)
+
+    manager = OppositeNetworkDataManager()
+
+    train(
+        OppositeNetwork(hidden_size),
+        create_data_loader(manager, train_dataset_path, train_count),
+        create_data_loader(manager, validation_dataset_path, validation_count),
+        train_directory
+    )
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -152,13 +193,29 @@ if __name__ == '__main__':
     #         100000)
     # )
 
-    run_simple_train_nnue(
-        8,
+    # run_opposite_train_nnue(
+    #     8,
+    #     "train-marked.csv",
+    #     "validate-marked.csv",
+    #      f"{TRAINS_DIR}/768x8-opposite-try",
+    #     10000000
+    # )
+
+    run_opposite_train_nnue(
+        256,
         "train-marked.csv",
         "validate-marked.csv",
-        f"{TRAINS_DIR}/768x8-marked-50M",
-        50000000
+        f"{TRAINS_DIR}/768x256-opposite-try",
+        188693257
     )
+
+    # run_simple_train_nnue(
+    #     8,
+    #     "train-marked.csv",
+    #     "validate-marked.csv",
+    #     f"{TRAINS_DIR}/768x8-marked-50M",
+    #     50000000
+    # )
 
     # run_simple_train_nnue(
     #     256,
