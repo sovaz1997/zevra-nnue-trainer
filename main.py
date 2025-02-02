@@ -49,7 +49,7 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=16384, num_workers=10, persistent_workers=True, prefetch_factor=2)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -156,9 +156,17 @@ if __name__ == '__main__':
         8,
         "train-marked.csv",
         "validate-marked.csv",
-        f"{TRAINS_DIR}/768x8-marked-10M",
-        10678656
+        f"{TRAINS_DIR}/768x8-marked-50M",
+        50000000
     )
+
+    # run_simple_train_nnue(
+    #     256,
+    #     "train-marked.csv",
+    #     "validate-marked.csv",
+    #     f"{TRAINS_DIR}/768x256-marked-190M",
+    #     188693257
+    # )
 
     # run_simple_train_nnue(
     #     256,
