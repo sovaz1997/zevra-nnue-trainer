@@ -6,7 +6,7 @@ from src.networks.halfkp.data_manager import HalfKPDataManager
 from src.networks.halfkp.network import HalfKPNetwork
 from src.networks.simple.data_manager import SimpleNetworkDataManager, SCALE
 from src.networks.simple.network import SimpleNetwork, SimpleDeepNetwork
-from src.train import train
+from src.train import train, calculate_wdl_eval_loss, calculate_wdl_eval_loss_dataset
 
 
 def get_positions_distribution(count: int):
@@ -49,7 +49,7 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
 def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
     # return create_singlethreaded_data_loader(manager, path)
     dataset = ChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=16384, num_workers=11, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=512, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
 def run_simple_train_nnue(
         hidden_size: int,
@@ -145,12 +145,19 @@ if __name__ == '__main__':
     #     30000000
     # )
 
+    # calculate_wdl_eval_loss_dataset(
+    #     ChessDataset(
+    #         "train-marked.csv",
+    #         SimpleNetworkDataManager(),
+    #         100000)
+    # )
+
     run_simple_train_nnue(
         8,
-        "train_marked-dataset.csv",
-        "validate_marked-dataset.csv",
-        f"{TRAINS_DIR}/768x8-marked-4M",
-        4404855
+        "train-marked.csv",
+        "validate-marked.csv",
+        f"{TRAINS_DIR}/768x8-marked-10M",
+        10678656
     )
 
     # run_simple_train_nnue(

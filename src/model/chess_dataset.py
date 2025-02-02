@@ -30,7 +30,7 @@ class ChessDataset(IterableDataset):
                 for idx, row in enumerate(reader):
                     if idx % 10000 == 0:
                         print(f"Processed positions: {idx}", flush=True)
-                    fen, wdl, score = row
+                    fen, score, wdl = row
                     try:
                         self.data_manager.save_bin_data(writer, fen, float(score), float(wdl))
                         self.dataset_positions_count += 1

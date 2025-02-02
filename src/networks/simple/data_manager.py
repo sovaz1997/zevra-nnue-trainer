@@ -52,7 +52,7 @@ class SimpleNetworkDataManager(TrainDataManager):
     def parse_record(self, record: bytes):
         packed_size = self.get_packed_size()
         packed_input = record[:self.get_packed_size()]
-        eval_score = struct.unpack('f', record[packed_size:packed_size + 4])[0] / SCALE
+        eval_score = struct.unpack('f', record[packed_size:packed_size + 4])[0]
         wdl_score = struct.unpack('f', record[packed_size + 4:])[0]
         nnue_input = unpack_bits(packed_input, SIMPLE_NETWORK_INPUT_SIZE)
 

@@ -3,13 +3,14 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 
+from src.model.chess_dataset import ChessDataset
 from src.model.nnue import NNUE
 from src.networks.simple.data_manager import SCALE
 
-lambda_ = 0.5
+lambda_ = 0
 
 def sigmoid(cp_space_eval: torch.Tensor):
-    return torch.sigmoid(cp_space_eval / SCALE)
+    return torch.sigmoid(cp_space_eval)
 
 
 
@@ -70,6 +71,41 @@ def load_checkpoint(
 
     return epoch
 
+def calculate_wdl_eval_loss_dataset(
+        validation_dataset: ChessDataset
+):
+    batches_length = 0
+    criterion = nn.MSELoss()
+    running_loss = 0.0
+
+    count = 0
+    for batch in validation_dataset:
+        inputs, eval_score, wdl_score = batch
+        sigmoid_score = sigmoid(eval_score / 400)
+        loss = abs(sigmoid_score - wdl_score) ** 2
+        running_loss += loss
+        count += 1
+
+    print(running_loss / count)
+
+
+def calculate_wdl_eval_loss(
+        validation_data_loader: DataLoader
+):
+    batches_length = 0
+    criterion = nn.MSELoss()
+    running_loss = 0.0
+
+    for batch_idx, (batch_inputs, batch_scores, wdl) in enumerate(validation_data_loader):
+        batches_length += 1
+        sigmoid_scores = sigmoid(batch_scores)
+        loss = criterion(wdl, sigmoid_scores)
+        print(loss)
+
+        running_loss += loss.item()
+
+    print(running_loss / batches_length)
+
 
 def train(
         model: NNUE,
@@ -84,7 +120,7 @@ def train(
     model = model.to(device)
 
     criterion = nn.MSELoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', patience=2, factor=0.5)
     epoch = load_checkpoint(model, optimizer, scheduler, train_directory) + 1
 
@@ -118,14 +154,11 @@ def train(
 
 
             wdl_eval_model = sigmoid(model(*batch_inputs))
-            wdl_eval_target = sigmoid(batch_scores)
+            wdl_eval_target = sigmoid(batch_scores / SCALE)
             wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
 
             loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
 
-
-
-            # loss = criterion(outputs.squeeze(), sigmoid(batch_scores))
             loss.backward()
             optimizer.step()
 
