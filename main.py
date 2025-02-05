@@ -2,6 +2,7 @@ import chess
 from torch import tensor, float32
 from torch.utils.data import DataLoader
 from src.model.chess_dataset import ChessDataset
+from src.model.plain_chess_dataset import PlainChessDataset
 from src.model.train_data_manager import TrainDataManager
 from src.networks.halfkp.data_manager import HalfKPDataManager
 from src.networks.halfkp.network import HalfKPNetwork
@@ -63,9 +64,11 @@ def create_singlethreaded_data_loader(manager: TrainDataManager, path: str):
     dataset = ChessDataset(path, manager)
     return DataLoader(dataset, batch_size=16384, num_workers=0)
 
-def create_data_loader(manager: TrainDataManager, path: str, positions_count: int):
+def create_data_loader(manager: TrainDataManager, path: str, positions_count: int, is_plain_dataset: bool = False):
     # return create_singlethreaded_data_loader(manager, path)
-    dataset = ChessDataset(path, manager, positions_count)
+    dataset = ChessDataset(path, manager, positions_count) \
+        if not is_plain_dataset \
+        else PlainChessDataset(path, manager, positions_count)
     return DataLoader(dataset, batch_size=16384, num_workers=10, persistent_workers=True, prefetch_factor=2)
 
 
@@ -74,7 +77,8 @@ def run_opposite_train_nnue(
     train_dataset_path: str,
     validation_dataset_path: str,
     train_directory,
-    positions_count: int
+    positions_count: int,
+    is_plain_dataset: bool = False
 ):
     # evaluate_position_opposite("4k3/8/8/8/8/8/PPPPPPPP/RNBQKBNR w KQ - 0 1")
     # evaluate_position_opposite("1nbqkbn1/pppppppp/8/8/8/8/PPPPPPPP/rNBQKBN1 w - - 0 1")
@@ -87,8 +91,8 @@ def run_opposite_train_nnue(
 
     train(
         OppositeNetwork(hidden_size),
-        create_data_loader(manager, train_dataset_path, train_count),
-        create_data_loader(manager, validation_dataset_path, validation_count),
+        create_data_loader(manager, train_dataset_path, train_count, is_plain_dataset),
+        create_data_loader(manager, validation_dataset_path, validation_count, is_plain_dataset),
         train_directory
     )
 
@@ -202,12 +206,21 @@ if __name__ == '__main__':
     # )
 
     run_opposite_train_nnue(
-        256,
-        "train-marked.csv",
-        "validate-marked.csv",
-        f"{TRAINS_DIR}/768x256-opposite-try",
-        188693257
+        32,
+        "train-self-play-dataset-gen005-1000nodes.csv",
+        "validate-self-play-dataset-gen005-1000nodes.csv",
+        f"{TRAINS_DIR}/full-self-play-gen006-768x32-v5",
+        12824968,
+        True
     )
+
+    # run_opposite_train_nnue(
+    #     256,
+    #     "train-marked.csv",
+    #     "validate-marked.csv",
+    #     f"{TRAINS_DIR}/768x256-opposite-wdl20percents",
+    #     188693257
+    # )
 
     # run_simple_train_nnue(
     #     8,

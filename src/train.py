@@ -7,7 +7,7 @@ from src.model.chess_dataset import ChessDataset
 from src.model.nnue import NNUE
 from src.networks.simple.data_manager import SCALE
 
-lambda_ = 1
+lambda_ = 0
 
 def sigmoid(cp_space_eval: torch.Tensor):
     return torch.sigmoid(cp_space_eval)
@@ -35,7 +35,7 @@ def validate(model: nn.Module, validation_dataloader: DataLoader):
         stm = stm.to("mps")
 
         wdl_eval_model = sigmoid(model(*batch_inputs_us, *batch_inputs_them, stm))
-        wdl_eval_target = sigmoid(batch_scores)
+        wdl_eval_target = sigmoid(batch_scores / SCALE)
         wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
         loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
 
@@ -165,11 +165,9 @@ def train(
 
             optimizer.zero_grad()
 
-
             wdl_eval_model = sigmoid(model(*batch_inputs_us, *batch_inputs_them, stm))
             wdl_eval_target = sigmoid(batch_scores / SCALE)
             wdl_value_target = lambda_ * wdl_eval_target + (1 - lambda_) * wdl
-
 
             loss = criterion(wdl_eval_model.squeeze(), wdl_value_target)
 
