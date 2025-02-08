@@ -11,7 +11,7 @@ from src.utils import ctzll, unpack_bits, pack_bits
 
 SCALE = 400
 
-@lru_cache(maxsize=None)
+@lru_cache(maxsize=1024)
 def calculate_nnue_index(color: bool, piece: int, square: int):
     colors_mapper = {
         chess.WHITE: 0,
@@ -30,7 +30,7 @@ def calculate_nnue_index(color: bool, piece: int, square: int):
     return 64 * 6 * colors_mapper[color] + pieces_mapper[piece] * 64 + square
 
 class OppositeNetworkDataManager(TrainDataManager):
-    @lru_cache(maxsize=None)
+    @lru_cache(maxsize=1000000)
     def calculate_nnue_input_layer(self, fen: str):
         board = chess.Board(fen)
         nnue_input_us = np.zeros(NETWORK_INPUT_SIZE, dtype=np.int8)

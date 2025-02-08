@@ -69,7 +69,7 @@ def create_data_loader(manager: TrainDataManager, path: str, positions_count: in
     dataset = ChessDataset(path, manager, positions_count) \
         if not is_plain_dataset \
         else PlainChessDataset(path, manager, positions_count)
-    return DataLoader(dataset, batch_size=16384, num_workers=10, persistent_workers=True, prefetch_factor=2)
+    return DataLoader(dataset, batch_size=16384, num_workers=11, persistent_workers=True, prefetch_factor=2)
 
 
 def run_opposite_train_nnue(
@@ -206,12 +206,11 @@ if __name__ == '__main__':
     # )
 
     run_opposite_train_nnue(
-        32,
-        "train-self-play-dataset-gen005-1000nodes.csv",
-        "validate-self-play-dataset-gen005-1000nodes.csv",
-        f"{TRAINS_DIR}/full-self-play-gen006-768x32-v5",
-        12824968,
-        True
+        64,
+        "train-self-play-dataset-gen008.csv",
+        "validate-self-play-dataset-gen008.csv",
+        f"{TRAINS_DIR}/full-self-play-gen009-768x64",
+        124974527,
     )
 
     # run_opposite_train_nnue(
